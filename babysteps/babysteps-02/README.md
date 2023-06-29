@@ -1,68 +1,17 @@
-# Babysteps - 01
-https://wiki.osdev.org/Babystep1
-
-* It required the version which has
-
-```asm
-hang:
-    jmp hang
-	times 510-($-$$) db 0
-	db 0x55
-	db 0xAA
-```
- 
-checking with `xxd` it is possible to see that these commands add the  `0x55aa` to the end of the binary.
-
-
-As far as I understood, the `db` directive will inject the bytes in the current position of the binary.
-
-Consider the code:
-
-```asm
-;test.asm
-
-db 0x46
-db 0x41
-db 0x42
-```
-
-assembled with
-```bash
-nasm test.asm -f bin -o test.bin
-```
-
-Then checked with
-```bash
-> xxd test.bin
-# 00000000: 4641 42                                  FAB  
-```
-
-The `boot.bin` image will be
-```
-xxd boot.bin
-# 00000000: ebfe 0000 <...> 0000 55aa
-```
-
-Where `eb` is the `jmp` instruction machine code.[reference](https://c9x.me/x86/html/file_module_x86_id_147.html)
-
-Running bootloader on qemu
-```bash
-qemu-system-i386 -hda boot.bin
-```
-
-The command above is likely to return the warning saying that automatically assuming raw format is not safe, but if you want to do so you need to be explicity to get rid of the warning.
-The way of doing that then is:
-
-```bash
-qemu-system-i386 -drive file=boot.bin,format=raw
-```
-
-Other references that seems useful but unused in the reference link for this tutorial:
-- http://www.baldwin.cx/386htm/toc.htm
-- https://www.plantation-productions.com/Webster/
-
 # Babysteps - 02
 https://wiki.osdev.org/Babystep2
+
+## Build
+
+- Compile and run
+```sh
+make all
+```
+
+- Clean
+```sh
+make clean
+```
 
 From the link above:
 ```
@@ -87,7 +36,7 @@ A list of available interrupts `INT 10H` for i386: https://en.wikipedia.org/wiki
 
 Look at boot.asm for commented code version with further explanation.
 
-### Printing
+## Printing
 In assembly language programming, there is no standard register named "SI" (SI Index) that is commonly used across different architectures. However, the term "SI" is often associated with the x86 architecture.
 
 In x86 assembly language, "SI" refers to the source index register, which is one of the general-purpose registers available in the CPU. The source index register, SI, is a 16-bit register (or 32-bit in 32-bit mode) typically used in string operations, such as copying or comparing blocks of memory.
@@ -129,7 +78,7 @@ print_bios:
   jmp print_bios    ; return to the top of the loop
 ```
 
-### Macro
+## Macro
 
 Macro syntax in assembly language refers to the structure and rules for defining and using macros. A macro is a named sequence of instructions or statements that can be defined once and then used multiple times in a program. It allows programmers to create reusable code snippets and improve code readability and maintainability.
 
@@ -219,7 +168,7 @@ done:
 
 In summary, the "BiosPrint" macro is designed to print a null-terminated string using BIOS teletype services. It takes the address of the string as a parameter and uses the SI register to iterate through the characters of the string, outputting them one by one until it reaches the null character.
 
-### Include
+## Include
 
 You can use the `%include` directive to reference other files.
 The declarations of macros and things to be used, needs to come before the usage, hence the usage goes like this:
