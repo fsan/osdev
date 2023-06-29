@@ -20,27 +20,50 @@
    ; with ORG, it is considered that the start ix 0x7c00 and the offset is zero
    ; ultimately, both ways end up pointing to the same address as explained above
 
-   mov ax, 0x07c0      ; initial address for the data segment
-   mov ds, ax          ; set the data segment
- 
-   mov si, msg         ; set source index with msg
-   cld                 ; clear direction flag for reading the string
+; Using 07c0:0000
+;  mov ax, 0x07c0      ; initial address for the data segment
+;  mov ds, ax          ; set the data segment
+;
+;  mov si, msg         ; set source index with msg
+;  cld                 ; clear direction flag for reading the string
 
-ch_loop:lodsb
-   or al, al                   ; will goto hang if end of str ; zero=end of str (0x0 = 0x0)
-   jz hang
+jmp main
+%include "utils.asm"   ; where the BiosPrint macro is defined
 
-   ; call interrupt x0x10h with 0x0e argument for printing
-   ; ah register hold the instruction
-   ; the ds register holds the address of the data segment
-   ; si holds the msg
-   mov ah, 0x0E
-   mov bh, 0
-   int 0x10
+; Using 0000:7c00
+main:
+[ORG 0x7c00]
+   xor ax, ax           ; makes ax 0
+   mov ds, ax           ; puts 0 in ds
+   cld                  ; clear direction flag for reading the string
 
-   ; go to the next iteration.
-   ; as the direction flag (df) is clear, it will read the next character
-   jmp ch_loop     
+   BiosPrint msg
+
+; si - source index for string operations
+;     mov si, msg
+;     call print_bios
+;     jmp hang
+;
+; ; put one character on the screen
+; print_bios:
+;    lodsb                 ; lodsb - Load byte at address DS:(E)SI into AL.
+;    or al, al             ; will goto hang if end of str ; zero=end of str (0x0 = 0x0)
+;    jz done
+; 
+;    ; lodsb - https://www.felixcloutier.com/x86/lods:lodsb:lodsw:lodsd:lodsq
+;    ; call interrupt x0x10h with 0x0e argument for printing
+;    ; ah register hold the instruction
+;    ; the ds register holds the address of the data segment
+;    ; si holds the msg
+;    mov ah, 0x0E
+;    mov bh, 0
+;    int 0x10
+; 
+;    ; go to the next iteration.
+;    ; as the direction flag (df) is clear, it will read the next character
+;    jmp print_bios 
+; done:
+;    ret
  
 hang:
    jmp hang
